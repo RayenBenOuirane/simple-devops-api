@@ -1,0 +1,44 @@
+# prometheus.yml
+# Configuration for Prometheus monitoring
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+# Alert manager configuration (optional)
+# alerting:
+#   alertmanagers:
+#   - static_configs:
+#     - targets:
+#       - alertmanager:9093
+
+# Rule files for alerts (optional)
+# rule_files:
+#   - "alert_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Scrape the API itself
+  - job_name: 'devops-api'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['api:8000']
+        labels:
+          service: 'devops-api'
+          environment: 'development'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+          environment: 'monitoring'
+
+# Optional: Node exporter for system metrics
+# - job_name: 'node'
+#   static_configs:
+#     - targets: ['node-exporter:9100']
