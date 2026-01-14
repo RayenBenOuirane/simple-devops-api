@@ -100,10 +100,11 @@ app.add_middleware(
 )
 
 # AJOUTÉ: TrustedHost middleware pour la sécurité
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=["localhost", "127.0.0.1", "0.0.0.0"]  # Restreindre en production
-)
+# Note: Disabled in K8s as it blocks pod IPs - use Ingress/NetworkPolicy instead
+# app.add_middleware(
+#     TrustedHostMiddleware,
+#     allowed_hosts=["localhost", "127.0.0.1", "0.0.0.0"]  # Restreindre en production
+# )
 
 @app.middleware("http")
 async def metrics_middleware(request: Request, call_next):
