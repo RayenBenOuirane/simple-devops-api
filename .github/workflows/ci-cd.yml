@@ -1,0 +1,142 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Permet déclenchement manuel
+
+jobs:
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest httpx
+    
+    - name: Run API tests
+      run: |
+        # Start API in background
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        sleep 5
+        
+        # Run tests
+        python -c "
+        import requests
+        
+        print(' Testing API endpoints...')
+        
+        # Test health endpoint
+        resp = requests.get('http://localhost:8000/health')
+        assert resp.status_code == 200
+        print('✅ Health check passed')
+        
+        # Test metrics endpoint
+        resp = requests.get('http://localhost:8000/metrics')
+        assert resp.status_code == 200
+        assert 'http_requests_total' in resp.text
+        print('✅ Metrics endpoint passed')
+        
+        # Test CRUD operations
+        resp = requests.post('http://localhost:8000/items', 
+                           json={'name': 'CI Test', 'price': 10.0})
+        assert resp.status_code == 201
+        print('✅ Create item passed')
+        "
+    
+    - name: Run security scan with Bandit
+      run: |
+        pip install bandit
+        bandit -r app/ -f json -o bandit-report.json || true
+
+  docker-build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Build Docker image
+      run: docker build -t devops-api .
+    
+    - name: Test Docker container
+      run: |
+        # Run container
+        docker run -d --name ci-test -p 8000:8000 devops-api
+        sleep 5
+        
+        # Test endpoints
+        curl -f http://localhost:8000/health || (docker logs ci-test && exit 1)
+        curl -f http://localhost:8000/metrics || (docker logs ci-test && exit 1)
+        
+        # Cleanup
+        docker stop ci-test
+        docker rm ci-test
+    
+    - name: Run Trivy vulnerability scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: devops-api
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload security reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-reports
+        path: |
+          bandit-report.json
+          trivy-results.sarif
+
+  deploy-simulation:
+    name: Deploy Simulation
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Simulate deployment
+      run: |
+        echo " Deployment Simulation"
+        echo "========================"
+        echo "Repository: ${{ github.repository }}"
+        echo "Commit SHA: ${{ github.sha }}"
+        echo "Triggered by: ${{ github.actor }}"
+        echo ""
+        echo "In a real scenario, this would:"
+        echo "1. Push Docker image to registry"
+        echo "2. Update Kubernetes manifests"
+        echo "3. Apply deployment with kubectl"
+        echo "4. Run smoke tests"
+        
+        # Create deployment report
+        cat << EOF > deployment-report.md
+        # Deployment Report
+        
+        - Status: ✅ Success (simulated)
+        - Environment: Production
+        - Commit: ${{ github.sha }}
+        - Timestamp: $(date -Iseconds)
+        - Services: API, Metrics, Health checks
+        EOF
+    
+    - name: Upload deployment report
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-report
+        path: deployment-report.md
