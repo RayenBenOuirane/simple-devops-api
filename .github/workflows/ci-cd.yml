@@ -95,26 +95,26 @@ jobs:
 
       - name: SAST - Static Application Security Testing
         run: |
-          echo "🔒 Running Bandit SAST scan..."
+          echo "Running Bandit SAST scan..."
           bandit -r app/ -f json -o bandit-report.json || true
 
           echo "=== BANDIT RESULTS SUMMARY ==="
           if [ -f bandit-report.json ]; then
-            python3 << 'EOF'
+            python3 -c "
 import json
 with open('bandit-report.json') as f:
     data = json.load(f)
-metrics = data['metrics']['_totals']
-print(f'Files scanned: {metrics["n_files"]}')
-print(f'Lines scanned: {metrics["n_lines"]}')
-print(f'Issues found: {metrics["n_issues"]}')
+metrics = data.get('metrics', {}).get('_totals', {})
+print('Files scanned: ' + str(metrics.get('n_files', 0)))
+print('Lines scanned: ' + str(metrics.get('n_lines', 0)))
+print('Issues found: ' + str(metrics.get('n_issues', 0)))
 
-if metrics['n_issues'] > 0:
-    print('\nIssues breakdown:')
-    for issue in data['results']:
-        if issue['issue_confidence'] in ['HIGH', 'MEDIUM']:
-            print(f'  - {issue["test_id"]}: {issue["issue_text"]}')
-EOF
+if metrics.get('n_issues', 0) > 0:
+    print('Issues breakdown:')
+    for issue in data.get('results', []):
+        if issue.get('issue_confidence') in ['HIGH', 'MEDIUM']:
+            print('  - ' + issue.get('test_id', 'N/A') + ': ' + issue.get('issue_text', 'N/A'))
+            "
           else
             echo "Error: Bandit report not generated"
           fi
@@ -127,40 +127,39 @@ EOF
 
       - name: Dependency vulnerability scan
         run: |
-          echo "📦 Scanning dependencies with Safety..."
+          echo "Scanning dependencies with Safety..."
           safety check -r requirements.txt --json > safety-report.json 2>&1 || true
 
           if [ -f safety-report.json ]; then
             echo "=== SAFETY RESULTS ==="
-            python3 << 'EOF'
+            python3 -c "
 import json
-import sys
 try:
     with open('safety-report.json') as f:
         content = f.read()
         if not content.strip():
-            print('✅ No vulnerabilities detected')
+            print('No vulnerabilities detected')
         else:
             try:
                 data = json.loads(content)
                 vulns = len(data.get('vulnerabilities', []))
-                print(f'Vulnerabilities found: {vulns}')
+                print('Vulnerabilities found: ' + str(vulns))
                 critical = 0
                 if vulns > 0:
-                    for vuln in data['vulnerabilities'][:3]:
-                        print(f'  - {vuln.get("package_name", "unknown")}')
-                    for v in data['vulnerabilities']:
+                    for vuln in data.get('vulnerabilities', [])[:3]:
+                        print('  - ' + vuln.get('package_name', 'unknown'))
+                    for v in data.get('vulnerabilities', []):
                         if v.get('severity', '').lower() == 'critical':
                             critical += 1
                     if critical > 0:
-                        print(f'Found {critical} critical vulnerabilities')
+                        print('Found ' + str(critical) + ' critical vulnerabilities')
                 else:
-                    print('✅ No vulnerabilities detected')
+                    print('No vulnerabilities detected')
             except:
                 print('Safety check completed')
 except Exception as e:
-    print(f'Safety completed: {e}')
-EOF
+    print('Safety completed: ' + str(e))
+            "
           else
             echo "Safety check completed"
           fi
