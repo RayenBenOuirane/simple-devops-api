@@ -1,0 +1,143 @@
+# .bandit.yml - Security Scan Configuration
+exclude_dirs:
+  - venv
+  - .venv
+  - tests
+  - .github
+
+skips:
+  - B101 # assert used
+
+test_selection:
+  - B102 # exec used
+  - B103 # pickle
+  - B104 # hardcoded bind all interfaces
+  - B105 # hardcoded password string
+  - B106 # hardcoded password func arg
+  - B107 # hardcoded password default
+  - B201 # flask debug true
+  - B301 # pickle
+  - B302 # marshal
+  - B303 # md5
+  - B304 # insecure cipher
+  - B305 # cipher without iv
+  - B306 # mktemp
+  - B307 # eval
+  - B308 # mark_safe
+  - B309 # https connection
+  - B401 # import subprocess
+  - B402 # import xml.etree
+  - B403 # import pickle
+  - B404 # import subprocess
+  - B405 # import xml.etree
+  - B406 # import bz2
+  - B407 # import lzma
+  - B408 # import crypt
+  - B409 # import pwd
+  - B410 # import spwd
+  - B411 # import crypt
+  - B412 # import hmac
+  - B413 # import random
+  - B501 # request with no verification
+  - B502 # ssl wrap socket
+  - B503 # ssl wrap socket
+  - B504 # ssl wrap socket
+  - B505 # weak cryptographic key
+  - B506 # yaml.load
+  - B507 # ssh no host key verification
+  - B508 # snmp v1/v2c
+  - B509 # https verification disabled
+  - B601 # paramiko exec command
+  - B602 # subprocess popen with shell true
+  - B603 # subprocess without output
+  - B604 # any other function with shell true
+  - B605 # start process with partial path
+  - B606 # start process with no path
+  - B607 # start process with no path
+  - B608 # hardcoded sql expression
+  - B609 # linux commands wildcard injection
+  - B610 # django mark safe
+  - B611 # django mark safe
+  - B612 # logging config insecure listen
+  - B613 # pycrypto
+  - B614 # django csrf cookie httponly
+  - B615 # django csrf cookie secure
+  - B616 # django csrf cookie samesite
+  - B617 # django secret key
+  - B618 # django debug
+  - B619 # django sql injection
+  - B620 # django xss
+  - B621 # django path traversal
+  - B622 # django insecure redirect
+  - B623 # django missing csrf
+  - B624 # django clickjacking
+  - B625 # django password hasher
+  - B626 # django session cookie
+  - B627 # django static files
+  - B628 # django middleware order
+  - B629 # django template engine
+  - B630 # django file upload
+  - B631 # django email
+  - B632 # django logging
+  - B633 # django cache
+  - B634 # django database
+  - B635 # django forms
+  - B636 # django models
+  - B637 # django views
+  - B638 # django urls
+  - B639 # django tests
+  - B640 # django admin
+  - B641 # django signals
+  - B642 # django translations
+  - B643 # django middleware
+  - B644 # django decorators
+  - B645 # django context processors
+  - B646 # django template tags
+  - B647 # django template filters
+  - B648 # django validators
+  - B649 # django fields
+  - B650 # django widgets
+  - B651 # django managers
+  - B652 # django queries
+  - B653 # django aggregates
+  - B654 # django expressions
+  - B655 # django functions
+  - B656 # django lookups
+  - B657 # django transforms
+  - B658 # django conditional expressions
+  - B659 # django database functions
+  - B660 # django text search
+  - B661 # django full text search
+  - B662 # django contrib
+  - B663 # django contrib auth
+  - B664 # django contrib contenttypes
+  - B665 # django contrib sessions
+  - B666 # django contrib messages
+  - B667 # django contrib staticfiles
+  - B668 # django contrib sitemaps
+  - B669 # django contrib syndication
+  - B670 # django contrib flatpages
+  - B671 # django contrib redirects
+  - B672 # django contrib postgres
+  - B673 # django contrib gis
+  - B674 # django contrib humanize
+  - B675 # django contrib admindocs
+  - B701 # jinja2 autoescape false
+  - B702 # jinja2 sandbox disabled
+  - B703 # mako default filters
+  - B704 # tornado template escape
+  - B705 # markupsafe escape
+  - B706 # cryptography weak key
+  - B707 # cryptography weak algorithm
+  - B708 # cryptography weak mode
+  - B709 # cryptography weak padding
+  - B710 # cryptography weak iv
+  - B711 # cryptography weak hash
+  - B712 # cryptography weak prng
+  - B713 # cryptography weak protocol
+  - B714 # cryptography weak cipher
+  - B715 # cryptography weak signature
+  - B716 # cryptography weak mac
+  - B717 # cryptography weak kdf
+  - B718 # cryptography weak rng
+  - B719 # cryptography weak secret

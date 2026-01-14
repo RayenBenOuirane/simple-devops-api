@@ -8,6 +8,7 @@ from typing import Dict, List
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware  # ← AJOUTÉ
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
 from pydantic import BaseModel
 
@@ -98,9 +99,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# AJOUTÉ: TrustedHost middleware pour la sécurité
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["localhost", "127.0.0.1", "0.0.0.0"]  # Restreindre en production
+)
+
 @app.middleware("http")
 async def metrics_middleware(request: Request, call_next):
-    """Middleware for metrics and logging"""
+    """Middleware for metrics, logging, and security"""
     start_time = time.time()
     request_id = str(uuid.uuid4())
     
@@ -141,6 +148,14 @@ async def metrics_middleware(request: Request, call_next):
         # Add tracing headers
         response.headers["X-Request-ID"] = request_id
         response.headers["X-Response-Time"] = f"{process_time:.3f}"
+        
+        # ============ SECURITY HEADERS ============
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=()"
+        # =========================================
         
         return response
         
