@@ -114,7 +114,7 @@ if metrics.get('n_issues', 0) > 0:
     for issue in data.get('results', []):
         if issue.get('issue_confidence') in ['HIGH', 'MEDIUM']:
             print('  - ' + issue.get('test_id', 'N/A') + ': ' + issue.get('issue_text', 'N/A'))
-            "
+"
           else
             echo "Error: Bandit report not generated"
           fi
